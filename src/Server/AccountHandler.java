@@ -94,7 +94,7 @@ public class AccountHandler implements Runnable {
             write();
             try {
                 int available = input.available();
-                while (available != 0) {
+                while (available != 0 && running) {
                     available = input.available();
                     byte[] bytes = new byte[available];
                     input.read(bytes);
@@ -178,7 +178,6 @@ public class AccountHandler implements Runnable {
                 sendData(commands);
                 break;
             case "$DISCONNECT":
-                sendToChatroom(s);
                 close();
                 break;
             case "$USERLIST": // username = ipaddress ....
@@ -280,10 +279,10 @@ public class AccountHandler implements Runnable {
             return;
         }
         setRunning(false);
-        for (int i = 0; i < chatrooms.size(); i++) {
+        /*for (int i = 0; i < chatrooms.size(); i++) {
             chatrooms.get(i).sendToAll(Server.NAME + Server.getTime() + name + " has disconnected." + chatrooms.get(i).name());
             chatrooms.get(i).removeUser(name);
-        }
+        }*/
         try {
             System.out.println("Closing socket to " + name);
             output.close();
