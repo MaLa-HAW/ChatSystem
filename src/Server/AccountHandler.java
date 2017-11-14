@@ -48,7 +48,7 @@ public class AccountHandler implements Runnable {
     /**
      * List of chatrooms
      */
-    private String commands = "COMMANDLIST:\n$COMMANDLIST\n$DISCONNECT\n$USERLIST\n$ROOMLIST\n$ROOMJOIN<!>CHATROOM";
+    private String commands = "COMMANDLIST:\n$COMMANDLIST\n$DISCONNECT\n$USERLIST\n$ROOMLIST\n$ROOMJOIN<!>CHATROOM\n$CURRENTROOM\n$SETNAME<!>newname";
 
 
     /**
