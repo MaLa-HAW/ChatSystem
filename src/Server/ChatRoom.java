@@ -54,10 +54,7 @@ public class ChatRoom {
      * @param s message to send
      */
     public synchronized void sendToAll(String s) {
-        for (Object user : users.toArray()) {
-            System.out.println(user + ":::::::" + s);
-            sendTo(s, (String) user);
-        }
+        users.stream().forEach(user -> sendTo(s, user));
     }
 
     /**
@@ -65,9 +62,7 @@ public class ChatRoom {
      * @param s  message to send   
      * @param user  username to send to
      */
-    public synchronized void sendTo(String s, String user) {
-        System.out.println(user);
-        System.out.println(s);
+    public void sendTo(String s, String user) {
         server.getAcct(user).sendData(s);
     }
 
@@ -76,7 +71,7 @@ public class ChatRoom {
      * @param user  username   
      * @return   true if added, false if already exists
      */
-    public synchronized boolean addUser(String user) {
+    public boolean addUser(String user) {
         if (!users.contains(user)) {
             users.add(user);
             return true;
@@ -96,6 +91,7 @@ public class ChatRoom {
     public String name() {
         return name;
     }
+
     public ArrayList<String> getUsers() {
         return users;
     }

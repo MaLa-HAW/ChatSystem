@@ -20,10 +20,7 @@ public class Server {
      * Socket acceptor
      */
     private ServerSocket socketAcceptor;
-    /**
-     * ThreadPoolExecutor: Runs threads, obviously
-     */
-    private final ExecutorService pool;
+
     /**
     /** Chatroom list */
     private ArrayList<ChatRoom> chatrooms;
@@ -53,13 +50,10 @@ public class Server {
             System.out.println("socketAcceptor wrong");
             e.printStackTrace();
         }
-        pool = Executors.newCachedThreadPool();
         acceptConnections();
         try {
             socketAcceptor.close();
         } catch (Exception e) {
-        } finally {
-            pool.shutdown();
         }
     }
 
@@ -73,29 +67,12 @@ public class Server {
                 String username = sock.getInetAddress().toString() + " [" + users.size() + "]";
                 users.add(username);
                 AccountHandler userHandler = new AccountHandler(username, "", sock, this);
+                userHandler.start();
                 acctMap.put(username, userHandler);
-
                 userHandler.addUserToRoom(chatrooms.get(getDefaultChatroomIndex()));
-                pool.execute(userHandler);
             } catch (Exception e) {
                 System.out.println("Did not work somewhere");
                 e.printStackTrace();
-            }
-        }
-    }
-
-    public synchronized void changeUsername(AccountHandler userHandler, String oldName, String newName){
-        users.remove(oldName);
-        users.add(newName);
-        userHandler.setName(newName);
-        acctMap.remove(oldName, userHandler);
-        acctMap.put(newName, userHandler);
-
-        for(ChatRoom room : chatrooms){
-            ArrayList<String> userList = room.getUsers();
-            if(userList.contains(oldName)){
-                room.removeUser(oldName);
-                room.addUser(newName);
             }
         }
     }
@@ -127,7 +104,7 @@ public class Server {
     }
 
     public synchronized void remove(AccountHandler acct) {
-        this.remove(acct.getName());
+        this.remove(acct.getAccName());
     }
 
     /**
@@ -167,6 +144,7 @@ ExecutorService ist eine Schnittstelle, die Executor erweitert. Unter anderem si
 
 
 Eine wichtige statische Methode der Klasse Executors ist newCachedThreadPool(). Das Ergebnis ist ein ExecutorService-Objekt, eine Implementierung von Executor mit der Methode execute(Runnable):
+
 
 
 
