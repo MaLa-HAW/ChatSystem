@@ -11,11 +11,7 @@ public class Server {
     /**
      * Map of usernames to accounts
      */
-    private HashMap<String, AccountHandler> acctMap;
-    /**
-     * List of usernames
-     */
-    private ArrayList<String> users;
+    private HashMap<String, AccountHandler> accMap;
     /**
      * Socket acceptor
      */
@@ -35,8 +31,7 @@ public class Server {
      * Close on error
      */
     public Server() {
-        acctMap = new HashMap<String, AccountHandler>();
-        users = new ArrayList<String>();
+        accMap = new HashMap<String, AccountHandler>();
         chatrooms = new ArrayList<ChatRoom>();
         chatrooms.add(new ChatRoom(this, "DEFAULT"));
         chatrooms.add(new ChatRoom(this, "TODO"));
@@ -64,11 +59,10 @@ public class Server {
         while (socketAcceptor != null && !socketAcceptor.isClosed()) {
             try {
                 Socket sock = socketAcceptor.accept();
-                String username = sock.getInetAddress().toString() + " [" + users.size() + "]";
-                users.add(username);
+                String username = sock.getInetAddress().toString() + " [" + accMap.size() + "]";
                 AccountHandler userHandler = new AccountHandler(username, "", sock, this);
                 userHandler.start();
-                acctMap.put(username, userHandler);
+                accMap.put(username, userHandler);
                 userHandler.addUserToRoom(chatrooms.get(getDefaultChatroomIndex()));
             } catch (Exception e) {
                 System.out.println("Did not work somewhere");
@@ -92,15 +86,11 @@ public class Server {
      * @param acctName: Account name, as String   
      */
     public synchronized void remove(String acctName) {
-        users.remove(acctName);
-        acctMap.remove(acctName);
 
-        for (int i = 0; i<chatrooms.size(); i++){
-            if (chatrooms.get(i).getUsers().contains(acctName)){
-                System.out.println("removed : " + acctName + ", from: " + chatrooms.get(i).name());
-                chatrooms.get(i).removeUser(acctName);
-            }
-        }
+
+        chatrooms.stream().filter(room -> room.getUsers().contains(acctName))
+                .forEach(room -> room.removeUser(accMap.get(acctName)));
+        accMap.remove(acctName);
     }
 
     public synchronized void remove(AccountHandler acct) {
@@ -112,7 +102,7 @@ public class Server {
      * @return   AccountHandler with username name
      */
     public AccountHandler getAcct(String name) {
-        return acctMap.get(name);
+        return accMap.get(name);
     }
 
     /**

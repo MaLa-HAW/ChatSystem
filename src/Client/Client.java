@@ -1,7 +1,5 @@
 package Client;
 
-import Server.SocketListener;
-
 import java.io.*;
 import java.net.*;
 import java.util.Observable;

@@ -2,7 +2,7 @@ package Server;
 
 import java.util.*;
 
-public class ChatRoom {
+public class ChatRoom extends Observable {
     /**
      * Handle to the server controller class
      */
@@ -10,7 +10,7 @@ public class ChatRoom {
     /**
      * List of users in the chat room. This could have been a list of AccountHandlers we will use String
      */
-    private ArrayList<String> users;
+    private Map<String, AccountHandler> users;
     /**
      * Chat room name
      */
@@ -22,31 +22,13 @@ public class ChatRoom {
 
     /**
      * Constructor   
-     * No empty constructor allowed   
-     */
-    private ChatRoom() {
-    }
-
-    /**
-     * Constructor   
      * @param server  handle to the main server   
      * @param name   chatroom name   
      */
     public ChatRoom(Server server, String name) {
         this.server = server;
         this.name = name;
-        users = new ArrayList<String>();
-    }
-
-    /**
-     * Constructor   
-     * @param server  handle to the main server   
-     * @param name   chatroom name   
-     * @param users  list of users to add
-     */
-    public ChatRoom(Server server, String name, ArrayList<String> users) {
-        this(server, name);
-        this.users = users;
+        users = new HashMap<>();
     }
 
     /**
@@ -54,16 +36,8 @@ public class ChatRoom {
      * @param s message to send
      */
     public synchronized void sendToAll(String s) {
-        users.stream().forEach(user -> sendTo(s, user));
-    }
-
-    /**
-     * Send a message to one user   
-     * @param s  message to send   
-     * @param user  username to send to
-     */
-    public void sendTo(String s, String user) {
-        server.getAcct(user).sendData(s);
+        setChanged();
+        notifyObservers(s);
     }
 
     /**
@@ -71,9 +45,10 @@ public class ChatRoom {
      * @param user  username   
      * @return   true if added, false if already exists
      */
-    public boolean addUser(String user) {
-        if (!users.contains(user)) {
-            users.add(user);
+    public boolean addUser(AccountHandler user) {
+        if (!users.containsKey(user)) {
+            users.put(user.getName(), user);
+            addObserver(user);
             return true;
         }
         return false;
@@ -82,17 +57,17 @@ public class ChatRoom {
     /**
      * Remove a user from the list.   
      * @param user  username   
-     * @return   true if removed, false if it did not exist
      */
-    public synchronized boolean removeUser(String user) {
-        return users.remove(user);
+    public synchronized void removeUser(AccountHandler user) {
+        deleteObserver(user);
+        server.remove(user);
     }
 
     public String name() {
         return name;
     }
 
-    public ArrayList<String> getUsers() {
-        return users;
+    public List<String> getUsers() {
+        return new ArrayList<>(users.keySet());
     }
 }

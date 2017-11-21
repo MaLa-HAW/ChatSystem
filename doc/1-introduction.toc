@@ -1,0 +1,8 @@
+\contentsline {chapter}{\numberline {1}Einf\IeC {\"u}hrung}{3}
+\contentsline {section}{\numberline {1.1}Allgemeines}{3}
+\contentsline {section}{\numberline {1.2}Client}{3}
+\contentsline {chapter}{\numberline {2}Befehle}{4}
+\contentsline {chapter}{\numberline {3}Architektur des Servers}{6}
+\contentsline {section}{\numberline {3.1}UML Diagram des Servers}{7}
+\contentsline {chapter}{\numberline {4}Architektur der Clients}{8}
+\contentsline {section}{\numberline {4.1}UML-Diagram des Clients}{8}

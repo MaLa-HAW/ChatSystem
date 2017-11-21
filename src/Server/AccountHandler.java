@@ -4,7 +4,7 @@ import java.util.*;
 import java.net.*;
 import java.io.*;
 
-public class AccountHandler extends Thread {
+public class AccountHandler extends Thread implements Observer {
     /**
      * Username
      */
@@ -21,14 +21,9 @@ public class AccountHandler extends Thread {
     private Socket sock;
 
     /**
-     * Output stream, handles Packets
+     * Output stream writer
      */
     private PrintWriter output;
-
-    /**
-     * Buffer of messages to send
-     */
-    private ArrayList<String> messages;
 
     /**
      * Handle to the server controller
@@ -50,15 +45,8 @@ public class AccountHandler extends Thread {
      */
     private ArrayList<ChatRoom> chatrooms;
 
-    /**
-     * No empty account handlers, otherwise big errors
-     */
-    private AccountHandler() {
-    }
 
     public AccountHandler(String name, String pass, Socket sock, Server server) {
-        messages = new ArrayList<String>();
-        chatrooms = new ArrayList<ChatRoom>();
         closed = false;
         this.name = name;
         this.pass = pass;
@@ -125,39 +113,34 @@ public class AccountHandler extends Thread {
             case "$USERLIST": // username = ipaddress ....
                 System.out.println("I'm in userlist");
                 for (int i = 0; i < chatrooms.size(); i++){
-                    ArrayList<String> userList = chatrooms.get(i).getUsers();
+                    List<String> userList = chatrooms.get(i).getUsers();
                     if(userList.contains(name)){
                         sendData("Userlist:");
                         for (String u : userList) {
                             sendData(u);
                         }
+                        sendData("End");
+
                     }
                 }
+                sendData("End");
                 break;
 
             case "$ROOMLIST":
                 System.out.println("I'm in roomlist");
                 sendData("Available Chatrooms: ");
                 for (ChatRoom chatroom : chatrooms) {
-                    // sonst falsche ausgabe
-                    // DEFAULT
-                    // TODOHUMMEL
                     sendData(chatroom.name());
                 }
+                sendData("End");
                 break;
 
             case "$ROOMJOIN":
-                System.out.println("I'm in roomjoin");
-                if(parts.length == 2) {
-                    for (int i = 0; i < chatrooms.size(); i++){
-                        if(chatrooms.get(i).name().equals(detailPart)){
-                            changeChatroom(chatrooms.get(i));
-                            sendToChatroom(name + " Joined "+ chatrooms.get(i).name());
-                        }
-                    }
-                } else {
-                    sendData("wrong syntax: $ROOMJOIN<!>CHATROOM ");
-                }
+                changeRoom(detailPart);
+                break;
+
+            case "$SETNAME":
+                setUserName(detailPart);
                 break;
 
             default: // send text
@@ -168,26 +151,61 @@ public class AccountHandler extends Thread {
     }
 
     /**
+     * Puts the user in another chatroom
+     * @param roomName new Chatroom
+     * @return true, if user is in the new chatroom, false if not
+     */
+    private boolean changeRoom(String roomName) {
+        boolean changedRoom = false;
+        System.out.println("I'm in roomjoin");
+        if(!roomName.isEmpty()) {
+            for (ChatRoom room: chatrooms){
+                if(room.name().equals(roomName)){
+                    changeChatroom(room);
+                    sendToChatroom(name + " Joined "+ room.name());
+                    changedRoom = true;
+                    break;
+                }
+            }
+        } else {
+            sendData("wrong syntax: $ROOMJOIN<!>CHATROOM ");
+        }
+        if (!changedRoom) {
+            sendData("ROOMJOIN FAILED");
+        }
+        return changedRoom;
+    }
+
+
+    /**
+     * Sets a new User Name
+     * @param newName new UserName
+     * @return true if user could be renamed, false if not
+     */
+    private boolean setUserName(String newName) {
+        if (newName.isEmpty()) {
+            sendData("wrong syntax: $SETNAME<!>USERNAME");
+            return false;
+        }
+        System.out.println("I'm in setname");
+        for(ChatRoom cr : server.getChatrooms()) {
+            for (String username :cr.getUsers()) {
+                if (username.equals(newName)) {
+                    sendData("SETNAME FAILED");
+                    return false;
+                }
+            }
+        }
+        sendToChatroom(name + " changed Name to " + newName);
+        name = newName;
+        return true;
+    }
+
+    /**
      * Write a message to all user in the same chatroom.
      */
     private void sendToChatroom(String s) {
         chatrooms.stream().filter(room -> room.getUsers().contains(name)).forEach(room -> room.sendToAll(s));
-    }
-
-    /**
-     * Write all messages in the buffer.
-     */
-    private void write() {
-        while (messages.size() > 0) {
-            sendData(messages.remove(0));
-        }
-    }
-
-    /**
-     * @param data: Add data to the buffer
-     */
-    private void addData(String data) {
-        messages.add(data);
     }
 
     /**
@@ -211,7 +229,7 @@ public class AccountHandler extends Thread {
         if (!closed) {
             for (int i = 0; i < chatrooms.size(); i++) {
                 chatrooms.get(i).sendToAll(Server.NAME + Server.getTime() + name + " has disconnected." + chatrooms.get(i).name());
-                chatrooms.get(i).removeUser(name);
+                chatrooms.get(i).removeUser(this);
             }
             try {
                 System.out.println("Closing socket to " + name);
@@ -220,7 +238,6 @@ public class AccountHandler extends Thread {
                 input.close();
             } catch (IOException e) {
                 System.out.println("Error closing datastream");
-                e.printStackTrace();
             } finally {
                 server.remove(this);
             }
@@ -232,7 +249,7 @@ public class AccountHandler extends Thread {
      * Add a user to the chatroom
      */
     public void addUserToRoom(ChatRoom room) {
-        room.addUser(name);
+        room.addUser(this);
     }
 
     /**
@@ -249,8 +266,8 @@ public class AccountHandler extends Thread {
     public void changeChatroom(ChatRoom room){
         for(int i = 0; i<chatrooms.size(); i++){
             if(chatrooms.get(i).getUsers().contains(name)){
-                chatrooms.get(i).removeUser(name);
-                room.addUser(name);
+                chatrooms.get(i).removeUser(this);
+                room.addUser(this);
             }
         }
     }
@@ -262,4 +279,27 @@ public class AccountHandler extends Thread {
         return name + ", " + pass;
     }
 
+    @Override
+    public void update(Observable o, Object arg) {
+        if (o instanceof ChatRoom && arg instanceof String) {
+            sendData((String)arg);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hashCode = 0;
+        for (char c: name.toCharArray()) {
+            hashCode += c;
+        }
+        return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof AccountHandler) {
+            return ((AccountHandler)o).getName().equals(name);
+        }
+        return false;
+    }
 }
