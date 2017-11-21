@@ -143,6 +143,24 @@ public class AccountHandler extends Thread implements Observer {
                 setUserName(detailPart);
                 break;
 
+            case "$COMMANDLIST":
+                sendData("Commandlist");
+                for (Commands com: Commands.values()) {
+                    sendData(com.getDescription());
+                }
+                sendData("End");
+                break;
+
+            case "$CURRENTROOM":
+                String current = "";
+                for (ChatRoom room : chatrooms) {
+                    if (room.getUsers().contains(name)) {
+                        current = room.name();
+                    }
+                }
+                sendData(current);
+                break;
+
             default: // send text
                 System.out.println("I'm in message");
                 sendToChatroom(name + ": " + s);
