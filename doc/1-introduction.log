@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.10.8)  21 NOV 2017 18:10
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.10.8)  21 NOV 2017 22:03
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -866,31 +866,36 @@ s wer-den Ze-ichen-ket-ten ^^?ubermittelt.
 
 ]
 chapter 2.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 38.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 41.
 (/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 38.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 41.
 
-Overfull \hbox (43.40886pt too wide) in paragraph at lines 41--42
+Overfull \hbox (43.40886pt too wide) in paragraph at lines 44--45
 \OT1/cmr/m/n/10.95 auftreten antwortet der Server mit \OT1/cmr/bx/n/10.95 ''wro
 ng syn-tax: $ROOMJOIN$\OML/cmm/m/it/10.95 <$\OT1/cmr/bx/n/10.95 !$\OML/cmm/m/it
 /10.95 >$\OT1/cmr/bx/n/10.95 CHATROOM''\OT1/cmr/m/n/10.95 . 
  []
 
 
-Overfull \hbox (7.05096pt too wide) in paragraph at lines 42--44
+Overfull \hbox (7.05096pt too wide) in paragraph at lines 45--47
 \OT1/cmr/m/n/10.95 ein-deutig sein). War der Wech-sel des Be-nutzer-na-men er-f
 ol-gre-ich, wird eine Nachricht
  []
 
 [4
 
-] [5]
+]
+Underfull \hbox (badness 10000) in paragraph at lines 54--68
+
+ []
+
+[5]
 chapter 3.
 
-Underfull \hbox (badness 10000) in paragraph at lines 52--55
+Underfull \hbox (badness 10000) in paragraph at lines 75--78
 
  []
 
@@ -898,10 +903,10 @@ Underfull \hbox (badness 10000) in paragraph at lines 52--55
 File: data/RNPA2Server.png Graphic file (type png)
 
 <use data/RNPA2Server.png>
-Package pdftex.def Info: data/RNPA2Server.png used on input line 58.
+Package pdftex.def Info: data/RNPA2Server.png used on input line 81.
 (pdftex.def)             Requested size: 456.50902pt x 496.25783pt.
 
-Overfull \hbox (38.25346pt too wide) in paragraph at lines 58--59
+Overfull \hbox (38.25346pt too wide) in paragraph at lines 81--82
 [] 
  []
 
@@ -913,10 +918,10 @@ chapter 4.
 File: data/RNPA2Client.png Graphic file (type png)
 
 <use data/RNPA2Client.png>
-Package pdftex.def Info: data/RNPA2Client.png used on input line 67.
+Package pdftex.def Info: data/RNPA2Client.png used on input line 93.
 (pdftex.def)             Requested size: 489.63304pt x 165.62001pt.
 
-Overfull \hbox (71.37749pt too wide) in paragraph at lines 67--68
+Overfull \hbox (71.37749pt too wide) in paragraph at lines 93--94
 [] 
  []
 
@@ -930,7 +935,7 @@ Here is how much of TeX's memory you used:
  6733 multiletter control sequences out of 15000+600000
  9094 words of font info for 32 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
- 46i,6n,66p,614b,215s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 46i,6n,66p,615b,227s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-di
 st/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fon
 ts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/typ
@@ -939,7 +944,7 @@ lic/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
 fonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/c
 m/cmssbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
 sy10.pfb>
-Output written on 1-introduction.pdf (8 pages, 122293 bytes).
+Output written on 1-introduction.pdf (8 pages, 123743 bytes).
 PDF statistics:
  64 PDF objects out of 1000 (max. 8388607)
  42 compressed objects within 1 object stream

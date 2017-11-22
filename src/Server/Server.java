@@ -126,6 +126,21 @@ public class Server {
     public ArrayList<ChatRoom> getChatrooms() {
         return chatrooms;
     }
+
+    /**
+     * Returns the chatroom with the given name
+     *
+     * @param name Name of the chatroom
+     * @return  chatroom with the given name, null if there is no room with that name
+     */
+    public ChatRoom getChatroomByName(String name) {
+        for (ChatRoom room : chatrooms) {
+            if (room.name().equals(name)) {
+                return room;
+            }
+        }
+        return null;
+    }
 }
 
 

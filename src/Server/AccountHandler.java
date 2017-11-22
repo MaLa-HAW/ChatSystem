@@ -41,9 +41,9 @@ public class AccountHandler extends Thread implements Observer {
     private boolean closed;
 
     /**
-     * List of chatrooms
+     *  Acctual chatroom
      */
-    private ArrayList<ChatRoom> chatrooms;
+    private ChatRoom chatroom;
 
 
     public AccountHandler(String name, String pass, Socket sock, Server server) {
@@ -59,7 +59,7 @@ public class AccountHandler extends Thread implements Observer {
             e.printStackTrace();
         }
 
-        chatrooms = server.getChatrooms();
+        chatroom = server.getChatroomByName("DEFAULT");
 
         System.out.println("Server has connected to " + name + "!");
         try {
@@ -112,16 +112,9 @@ public class AccountHandler extends Thread implements Observer {
 
             case "$USERLIST": // username = ipaddress ....
                 System.out.println("I'm in userlist");
-                for (int i = 0; i < chatrooms.size(); i++){
-                    List<String> userList = chatrooms.get(i).getUsers();
-                    if(userList.contains(name)){
-                        sendData("Userlist:");
-                        for (String u : userList) {
-                            sendData(u);
-                        }
-                        sendData("End");
-
-                    }
+                sendData("Userlist:");
+                for (String u : chatroom.getUsers()) {
+                    sendData(u);
                 }
                 sendData("End");
                 break;
@@ -129,14 +122,14 @@ public class AccountHandler extends Thread implements Observer {
             case "$ROOMLIST":
                 System.out.println("I'm in roomlist");
                 sendData("Available Chatrooms: ");
-                for (ChatRoom chatroom : chatrooms) {
+                for (ChatRoom chatroom : server.getChatrooms()) {
                     sendData(chatroom.name());
                 }
                 sendData("End");
                 break;
 
             case "$ROOMJOIN":
-                changeRoom(detailPart);
+                changeChatroom(detailPart);
                 break;
 
             case "$SETNAME":
@@ -152,13 +145,7 @@ public class AccountHandler extends Thread implements Observer {
                 break;
 
             case "$CURRENTROOM":
-                String current = "";
-                for (ChatRoom room : chatrooms) {
-                    if (room.getUsers().contains(name)) {
-                        current = room.name();
-                    }
-                }
-                sendData(current);
+                sendData(chatroom.name());
                 break;
 
             default: // send text
@@ -166,32 +153,6 @@ public class AccountHandler extends Thread implements Observer {
                 sendToChatroom(name + ": " + s);
                 break;
         }
-    }
-
-    /**
-     * Puts the user in another chatroom
-     * @param roomName new Chatroom
-     * @return true, if user is in the new chatroom, false if not
-     */
-    private boolean changeRoom(String roomName) {
-        boolean changedRoom = false;
-        System.out.println("I'm in roomjoin");
-        if(!roomName.isEmpty()) {
-            for (ChatRoom room: chatrooms){
-                if(room.name().equals(roomName)){
-                    changeChatroom(room);
-                    sendToChatroom(name + " Joined "+ room.name());
-                    changedRoom = true;
-                    break;
-                }
-            }
-        } else {
-            sendData("wrong syntax: $ROOMJOIN<!>CHATROOM ");
-        }
-        if (!changedRoom) {
-            sendData("ROOMJOIN FAILED");
-        }
-        return changedRoom;
     }
 
 
@@ -223,7 +184,7 @@ public class AccountHandler extends Thread implements Observer {
      * Write a message to all user in the same chatroom.
      */
     private void sendToChatroom(String s) {
-        chatrooms.stream().filter(room -> room.getUsers().contains(name)).forEach(room -> room.sendToAll(s));
+        chatroom.sendToAll(s);
     }
 
     /**
@@ -245,10 +206,8 @@ public class AccountHandler extends Thread implements Observer {
      */
     private void close() {
         if (!closed) {
-            for (int i = 0; i < chatrooms.size(); i++) {
-                chatrooms.get(i).sendToAll(Server.NAME + Server.getTime() + name + " has disconnected." + chatrooms.get(i).name());
-                chatrooms.get(i).removeUser(this);
-            }
+            chatroom.sendToAll(Server.NAME + Server.getTime() + name + " has disconnected." + chatroom.name());
+            chatroom.removeUser(this);
             try {
                 System.out.println("Closing socket to " + name);
                 output.close();
@@ -258,8 +217,8 @@ public class AccountHandler extends Thread implements Observer {
                 System.out.println("Error closing datastream");
             } finally {
                 server.remove(this);
+                closed = true;
             }
-            closed = true;
         }
     }
 
@@ -279,15 +238,23 @@ public class AccountHandler extends Thread implements Observer {
 
     /**
      * Change the Chatroom.
-     * @param room: change the chatroom to room
+     * @param roomName: change the chatroom to room
      */
-    public void changeChatroom(ChatRoom room){
-        for(int i = 0; i<chatrooms.size(); i++){
-            if(chatrooms.get(i).getUsers().contains(name)){
-                chatrooms.get(i).removeUser(this);
-                room.addUser(this);
-            }
+    public boolean changeChatroom(String roomName) {
+        if (roomName == null) {
+            sendData("wrong syntax: $ROOMJOIN<!>CHATROOM ");
+            return false;
         }
+        ChatRoom newRoom = server.getChatroomByName(roomName);
+        if (newRoom != null) {
+            chatroom.removeUser(this);
+            newRoom.addUser(this);
+            chatroom = newRoom;
+            sendToChatroom(name + " joined " + chatroom.name());
+            return true;
+        }
+        sendData("ROOMJOIN FAILED");
+        return false;
     }
 
     /**
