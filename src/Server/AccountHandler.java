@@ -204,7 +204,7 @@ public class AccountHandler extends Thread implements Observer {
      * Close the account thread.   
      * Close all streams and the socket and request to be removed.
      */
-    private void close() {
+    public void close() {
         if (!closed) {
             chatroom.sendToAll(Server.NAME + Server.getTime() + name + " has disconnected." + chatroom.name());
             chatroom.removeUser(this);
@@ -226,7 +226,10 @@ public class AccountHandler extends Thread implements Observer {
      * Add a user to the chatroom
      */
     public void addUserToRoom(ChatRoom room) {
+
+        chatroom.removeUser(this);
         room.addUser(this);
+
     }
 
     /**

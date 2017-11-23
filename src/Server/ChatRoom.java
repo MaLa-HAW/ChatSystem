@@ -70,4 +70,13 @@ public class ChatRoom extends Observable {
     public List<String> getUsers() {
         return new ArrayList<>(users.keySet());
     }
+
+    /**
+     * Closes the ChatRoom an all Users
+     */
+    public void closeRoom() {
+        for (AccountHandler user : users.values()) {
+            user.addUserToRoom(server.getChatroomByName("DEFAULT"));
+        }
+    }
 }

@@ -5,13 +5,18 @@ import java.io.*;
 import java.net.*;
 import java.util.concurrent.*;
 
-public class Server {
-    /** Messages generated and sent from the server have this name */
+public class Server extends Thread {
+
+    /**
+     * Messages generated and sent from the server have this name
+     **/
     public static final String NAME = "@SERVER";
+
     /**
      * Map of usernames to accounts
      */
     private HashMap<String, AccountHandler> accMap;
+
     /**
      * Socket acceptor
      */
@@ -30,7 +35,7 @@ public class Server {
      * Accept connections   
      * Close on error
      */
-    public Server() {
+    public Server(int port) {
         accMap = new HashMap<String, AccountHandler>();
         chatrooms = new ArrayList<ChatRoom>();
         chatrooms.add(new ChatRoom(this, "DEFAULT"));
@@ -39,55 +44,54 @@ public class Server {
 
         System.out.println("Initializing server.");
         try {
-            socketAcceptor = new ServerSocket(7777);
-		System.out.println(socketAcceptor);
+            socketAcceptor = new ServerSocket(port);
+		    System.out.println(socketAcceptor);
         } catch (Exception e) {
             System.out.println("socketAcceptor wrong");
             e.printStackTrace();
         }
-        acceptConnections();
+
         try {
             socketAcceptor.close();
         } catch (Exception e) {
         }
     }
 
+    public Server() {
+        this(7777);
+    }
+
+    @Override
+    public void run() {
+        while (socketAcceptor != null && !socketAcceptor.isClosed()) {
+            acceptConnections();
+        }
+
+    }
+
     /**
      * Accept connections   
      */
     private void acceptConnections() {
-        while (socketAcceptor != null && !socketAcceptor.isClosed()) {
             try {
                 Socket sock = socketAcceptor.accept();
                 String username = sock.getInetAddress().toString() + " [" + accMap.size() + "]";
                 AccountHandler userHandler = new AccountHandler(username, "", sock, this);
                 userHandler.start();
                 accMap.put(username, userHandler);
-                userHandler.addUserToRoom(chatrooms.get(getDefaultChatroomIndex()));
+                userHandler.addUserToRoom(getChatroomByName("DEFAULT"));
             } catch (Exception e) {
                 System.out.println("Did not work somewhere");
                 e.printStackTrace();
             }
-        }
     }
 
-    private int getDefaultChatroomIndex() {
-        int defaultChatroomIndex = 0;
-        for (int i = 0; i<chatrooms.size(); i++){
-            if (chatrooms.get(i).name().equals("DEFAULT")){
-                defaultChatroomIndex = i;
-            }
-        }
-        return defaultChatroomIndex;
-    }
 
     /**
      * Remove an account from the account list and map   
      * @param acctName: Account name, as String   
      */
     public synchronized void remove(String acctName) {
-
-
         chatrooms.stream().filter(room -> room.getUsers().contains(acctName))
                 .forEach(room -> room.removeUser(accMap.get(acctName)));
         accMap.remove(acctName);
@@ -118,9 +122,26 @@ public class Server {
         return time;
     }
 
+    /**
+     * Creates a new Chatroom is no one exists with the given name
+     * @param roomName
+     * @return true is new chatroom is created, false if not
+     */
+    public boolean createRoom(String roomName) {
+        if (getChatroomByName(roomName) == null) {
+            return chatrooms.add(new ChatRoom(this, roomName));
+        }
+        return false;
+    }
 
-    public static void main(String[] args) {
-        new Server();
+
+    public boolean closeRoom(String roomName) {
+        ChatRoom room = getChatroomByName(roomName);
+        if (room != null) {
+
+            return true;
+        }
+        return false;
     }
 
     public ArrayList<ChatRoom> getChatrooms() {
@@ -140,6 +161,29 @@ public class Server {
             }
         }
         return null;
+    }
+
+    /**
+     * Closes the Socket from this server
+     *
+     * @return true - socket is closed
+     *         false - socket could not be closed
+     */
+    public boolean closeServer() {
+        if (socketAcceptor != null && !socketAcceptor.isClosed()) {
+            try {
+                socketAcceptor.close();
+                socketAcceptor = null;
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    public static void main(String[] args) {
+        new Server().run();
     }
 }
 
