@@ -45,7 +45,7 @@ public class ServerMain {
 
     public void runServer() {
         if (server != null) {
-            server.run();
+            server.start();
             System.out.println("Server runs now");
         } else {
             System.out.println("You need to create a server first");

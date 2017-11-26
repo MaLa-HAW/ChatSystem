@@ -77,8 +77,11 @@ public class AccountHandler extends Thread implements Observer {
         try {
             while(!closed) {
                 String message = input.readLine();
-                System.out.println(message);
-                processMessage(message);
+                if (!closed && message != null) {
+                    System.out.println(message);
+                    server.log("C: " + message);
+                    processMessage(message);
+                }
             }
         } catch (IOException e) {
             close();
@@ -167,13 +170,9 @@ public class AccountHandler extends Thread implements Observer {
             return false;
         }
         System.out.println("I'm in setname");
-        for(ChatRoom cr : server.getChatrooms()) {
-            for (String username :cr.getUsers()) {
-                if (username.equals(newName)) {
-                    sendData("SETNAME FAILED");
-                    return false;
-                }
-            }
+        if (server.getAcct(newName) != null) {
+            sendData("SETNAME FAILED");
+            return false;
         }
         sendToChatroom(name + " changed Name to " + newName);
         name = newName;
@@ -194,6 +193,7 @@ public class AccountHandler extends Thread implements Observer {
     public void sendData(String data) {
         if (!closed && output != null) {
             System.out.println("Sending " + name + " '" + data + "'");
+            server.log("S: " + data);
             output.println(data);
             output.flush();
         }
@@ -206,7 +206,6 @@ public class AccountHandler extends Thread implements Observer {
      */
     public void close() {
         if (!closed) {
-            chatroom.sendToAll(Server.NAME + Server.getTime() + name + " has disconnected." + chatroom.name());
             chatroom.removeUser(this);
             try {
                 System.out.println("Closing socket to " + name);
@@ -226,7 +225,6 @@ public class AccountHandler extends Thread implements Observer {
      * Add a user to the chatroom
      */
     public void addUserToRoom(ChatRoom room) {
-
         chatroom.removeUser(this);
         room.addUser(this);
 

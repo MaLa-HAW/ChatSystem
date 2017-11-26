@@ -42,6 +42,8 @@ public class Client extends Observable implements Observer {
             if (out != null && in != null) {
                 output = new PrintWriter(new OutputStreamWriter(out));
                 listener = new SocketListener(in);
+            } else {
+                throw new ConnectException("Connection Error");
             }
             listener.addObserver(this);
             new Thread(listener).start();
@@ -49,7 +51,6 @@ public class Client extends Observable implements Observer {
             System.out.println("ConnectException. Chances are the server is turned off or the port is blocked or wrong.");
             close();
         } catch (Exception e) {
-            e.printStackTrace();
             close();
         }
 
@@ -74,9 +75,9 @@ public class Client extends Observable implements Observer {
         } catch (SocketException e) {
             // Do nothing here
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (NullPointerException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         System.out.println("Closed chat.");
     }

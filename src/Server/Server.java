@@ -1,11 +1,17 @@
 package Server;
 
+import textFileLogger.TextFileLogger;
+
 import java.util.*;
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.*;
 
 public class Server extends Thread {
+
+    private final int MAX_USERS = 1;
+
+    private int userCount;
 
     /**
      * Messages generated and sent from the server have this name
@@ -22,9 +28,12 @@ public class Server extends Thread {
      */
     private ServerSocket socketAcceptor;
 
-    /**
     /** Chatroom list */
     private ArrayList<ChatRoom> chatrooms;
+
+    private TextFileLogger logger;
+
+    private boolean closed;
 
     /**
      * Constructor   
@@ -36,25 +45,27 @@ public class Server extends Thread {
      * Close on error
      */
     public Server(int port) {
+        userCount = 0;
         accMap = new HashMap<String, AccountHandler>();
         chatrooms = new ArrayList<ChatRoom>();
         chatrooms.add(new ChatRoom(this, "DEFAULT"));
         chatrooms.add(new ChatRoom(this, "TODO"));
         chatrooms.add(new ChatRoom(this, "HUMMEL"));
 
+
         System.out.println("Initializing server.");
         try {
+            this.logger = new TextFileLogger("src/Server/logging.txt");
             socketAcceptor = new ServerSocket(port);
+            log("Initializing server.");
+            log(socketAcceptor.toString());
 		    System.out.println(socketAcceptor);
         } catch (Exception e) {
             System.out.println("socketAcceptor wrong");
             e.printStackTrace();
         }
 
-        try {
-            socketAcceptor.close();
-        } catch (Exception e) {
-        }
+        closed = false;
     }
 
     public Server() {
@@ -63,7 +74,7 @@ public class Server extends Thread {
 
     @Override
     public void run() {
-        while (socketAcceptor != null && !socketAcceptor.isClosed()) {
+        while (!closed) {
             acceptConnections();
         }
 
@@ -74,18 +85,43 @@ public class Server extends Thread {
      */
     private void acceptConnections() {
             try {
+
                 Socket sock = socketAcceptor.accept();
-                String username = sock.getInetAddress().toString() + " [" + accMap.size() + "]";
+                String username = sock.getInetAddress().toString().substring(1);
                 AccountHandler userHandler = new AccountHandler(username, "", sock, this);
-                userHandler.start();
-                accMap.put(username, userHandler);
-                userHandler.addUserToRoom(getChatroomByName("DEFAULT"));
+                if (userCount < MAX_USERS) {
+                    if (!accMap.containsKey(username)) {
+                        userCount++;
+                        userHandler.start();
+                        accMap.put(username, userHandler);
+                        accMap.keySet().stream().forEach(key -> System.out.println(key));
+                        userHandler.addUserToRoom(getChatroomByName("DEFAULT"));
+                    } else {
+                        Thread.sleep(100);
+                        userHandler.sendData("You are already connected");
+//                        Thread.sleep(100);
+                        userHandler.close();
+                    }
+                } else {
+                    Thread.sleep(100);
+                    userHandler.sendData("Server is full");
+//                    Thread.sleep(100);
+                    userHandler.close();
+                }
             } catch (Exception e) {
-                System.out.println("Did not work somewhere");
-                e.printStackTrace();
+                //System.out.println("Did not work somewhere");
+                //e.printStackTrace();
             }
     }
 
+
+    public synchronized void log(String s) {
+        try {
+            this.logger.log(s);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Remove an account from the account list and map   
@@ -138,7 +174,7 @@ public class Server extends Thread {
     public boolean closeRoom(String roomName) {
         ChatRoom room = getChatroomByName(roomName);
         if (room != null) {
-
+            room.closeRoom();
             return true;
         }
         return false;
@@ -173,7 +209,9 @@ public class Server extends Thread {
         if (socketAcceptor != null && !socketAcceptor.isClosed()) {
             try {
                 socketAcceptor.close();
+                logger.close();
                 socketAcceptor = null;
+                closed = true;
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -183,7 +221,7 @@ public class Server extends Thread {
     }
 
     public static void main(String[] args) {
-        new Server().run();
+        new Server().start();
     }
 }
 

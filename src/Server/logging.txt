@@ -1,0 +1,29 @@
+########## - Start: 2017-11-24 - ##########
+Initializing server.
+ServerSocket[addr=0.0.0.0/0.0.0.0,localport=7777]
+C: 127.0.1.1 has Joined.
+C: huhuhu
+S: 127.0.0.1: huhuhu
+C: 127.0.1.1 has Joined.
+S: 127.0.0.1: 127.0.1.1 has Joined.
+S: 127.0.0.1: 127.0.1.1 has Joined.
+C: Huhuu
+S: 127.0.0.1: Huhuu
+S: 127.0.0.1: Huhuu
+C: $SETNAME<!>Otto
+S: 127.0.0.1 changed Name to Otto
+S: 127.0.0.1 changed Name to Otto
+C: $SETNAME<!>Otto
+S: 127.0.0.1 changed Name to Otto
+S: 127.0.0.1 changed Name to Otto
+C: hallo
+S: Otto: hallo
+S: Otto: hallo
+C: hallo
+S: Otto: hallo
+S: Otto: hallo
+C: $DISCONNECT
+S: Otto: left Server
+S: Otto: left Server
+C: $DISCONNECT
+S: Otto: left Server
