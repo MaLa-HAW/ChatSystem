@@ -9,7 +9,7 @@ import java.util.concurrent.*;
 
 public class Server extends Thread {
 
-    private final int MAX_USERS = 1;
+    private final int MAX_USERS = 255;
 
     private int userCount;
 
@@ -55,7 +55,7 @@ public class Server extends Thread {
 
         System.out.println("Initializing server.");
         try {
-            this.logger = new TextFileLogger("src/Server/logging.txt");
+            this.logger = new TextFileLogger("/home/andre/git/ChatSystem/src/Server/logging.txt");
             socketAcceptor = new ServerSocket(port);
             log("Initializing server.");
             log(socketAcceptor.toString());
