@@ -39,8 +39,9 @@ public class ServerMain {
             server.closeServer();
             server = null;
             System.out.println("Server closed");
+        } else {
+            System.out.println("No Server to kill");
         }
-        System.out.println("No Server to kill");
     }
 
     public void runServer() {
